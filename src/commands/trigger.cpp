@@ -83,6 +83,12 @@ storage::Tuple* TriggerList::ExecBRInsertTriggers(storage::Tuple *tuple) {
       continue;
     }
 
+    if (obj.GetTriggerWhen() == nullptr) {
+      LOG_INFO("triggerWhen is nullptr");
+    } else {
+      LOG_INFO("triggerWhen is not nullptr");
+    }
+
     //TODO: check if trigger is enabled
 
     // apply all per-row-before-insert triggers on the tuple
