@@ -4,6 +4,8 @@
 #include "planner/create_plan.h"
 #include "common/logger.h"
 #include "storage/tuple.h"
+#include "executor/executor_context.h"
+#include "expression/abstract_expression.h"
 
 namespace peloton {
 namespace commands {
@@ -14,6 +16,7 @@ class Trigger {
   inline int16_t GetTriggerType() { return trigger_type; }
   inline std::string GetTriggerName() { return trigger_name; }
   storage::Tuple* ExecCallTriggerFunc(storage::Tuple *new_tuple);
+  expression::AbstractExpression* GetTriggerWhen() const {return trigger_when;}
 
  private:
   std::string trigger_name;
@@ -50,7 +53,7 @@ class TriggerList {
   void AddTrigger(Trigger trigger);
   void UpdateTypeSummary(int16_t type);
   Trigger* Get(int n) { return &triggers[n]; }  // get trigger by index
-  storage::Tuple* ExecBRInsertTriggers(storage::Tuple *new_tuple);
+  storage::Tuple* ExecBRInsertTriggers(storage::Tuple *new_tuple, executor::ExecutorContext *executor_context_);
  private:
   bool types_summary[TRIGGER_TYPE_MAX] = {false};
   std::vector<Trigger> triggers;

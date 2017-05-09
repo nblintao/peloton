@@ -175,7 +175,7 @@ bool InsertExecutor::DExecute() {
         if (trigger_list->HasTriggerType(commands::EnumTriggerType::BEFORE_INSERT_ROW)) {
           LOG_INFO("target table has per-row-before-insert triggers!");
           LOG_INFO("address of the origin tuple before firing triggers: 0x%lx", long(tuple));
-          new_tuple = trigger_list->ExecBRInsertTriggers(const_cast<storage::Tuple *> (tuple));
+          new_tuple = trigger_list->ExecBRInsertTriggers(const_cast<storage::Tuple *> (tuple), executor_context_);
           LOG_INFO("address of the new tuple after firing triggers: 0x%lx", long(new_tuple));
         }
       }
