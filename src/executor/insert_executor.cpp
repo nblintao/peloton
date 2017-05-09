@@ -79,6 +79,7 @@ bool InsertExecutor::DExecute() {
   // Inserting a logical tile.
   if (children_.size() == 1) {
     LOG_DEBUG("Insert executor :: 1 child ");
+    LOG_INFO("Insert executor :: 1 child ");
 
     if (!children_[0]->Execute()) {
       return false;
@@ -130,6 +131,7 @@ bool InsertExecutor::DExecute() {
   // Inserting a collection of tuples from plan node
   else if (children_.size() == 0) {
     LOG_DEBUG("Insert executor :: 0 child ");
+    LOG_INFO("Insert executor :: 0 child ");
 
     // Extract expressions from plan node and construct the tuple.
     // For now we just handle a single tuple
@@ -175,7 +177,8 @@ bool InsertExecutor::DExecute() {
         if (trigger_list->HasTriggerType(commands::EnumTriggerType::BEFORE_INSERT_ROW)) {
           LOG_INFO("target table has per-row-before-insert triggers!");
           LOG_INFO("address of the origin tuple before firing triggers: 0x%lx", long(tuple));
-          new_tuple = trigger_list->ExecBRInsertTriggers(const_cast<storage::Tuple *> (tuple));
+
+          new_tuple = trigger_list->ExecBRInsertTriggers(const_cast<storage::Tuple *> (tuple), executor_context_);
           LOG_INFO("address of the new tuple after firing triggers: 0x%lx", long(new_tuple));
         }
       }

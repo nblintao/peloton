@@ -47,7 +47,7 @@ void TriggerList::UpdateTypeSummary(int16_t type) {
 /**
  * execute trigger on each row before inserting tuple.
  */
-storage::Tuple* TriggerList::ExecBRInsertTriggers(storage::Tuple *tuple) {
+storage::Tuple* TriggerList::ExecBRInsertTriggers(storage::Tuple *tuple, executor::ExecutorContext *executor_context_) {
   unsigned i;
   LOG_INFO("enter into ExecBRInsertTriggers");
 
@@ -66,10 +66,27 @@ storage::Tuple* TriggerList::ExecBRInsertTriggers(storage::Tuple *tuple) {
     }
 
     //TODO: check if trigger is enabled
+    LOG_INFO("==================");
+    expression::AbstractExpression* predicate_ = obj.GetTriggerWhen();
+    if (predicate_ != nullptr) {
+      if (executor_context_ != nullptr) {
+        LOG_INFO("before evalulate");
+        auto number = predicate_->GetChildrenSize();
+        (void) number;
+        auto eval = predicate_->Evaluate(tuple, nullptr, executor_context_);
+        LOG_INFO("Evaluation result: %s", eval.GetInfo().c_str());
+        if (eval.IsTrue()) {
+          continue;
+        }
+      }
+    }
+    (void) executor_context_;
+    LOG_INFO("==================");
 
     // apply all per-row-before-insert triggers on the tuple
     new_tuple = obj.ExecCallTriggerFunc(tuple);
   }
+  LOG_INFO("out of ExecBRInsertTriggers");
   return new_tuple;
 }
 
