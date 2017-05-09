@@ -59,7 +59,8 @@ class Trigger {
   }
 
   //TODO
-  inline std::string GetWhen() {return "function_arguments";}
+  // inline std::string GetWhen() {return "function_arguments";}
+  inline expression::AbstractExpression* GetTriggerWhen() const {return trigger_when;}
 
  private:
   std::string trigger_name;
@@ -97,7 +98,7 @@ class TriggerList {
   void AddTrigger(Trigger trigger);
   void UpdateTypeSummary(int16_t type);
   Trigger* Get(int n) { return &triggers[n]; }  // get trigger by index
-  storage::Tuple* ExecBRInsertTriggers(storage::Tuple *new_tuple);
+  storage::Tuple* ExecBRInsertTriggers(storage::Tuple *new_tuple, executor::ExecutorContext *executor_context_);
  private:
   // types_summary contains a boolean for each kind of EnumTriggerType, this is
   // used for facilitate checking weather there is a trigger to be invoked
