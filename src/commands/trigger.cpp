@@ -71,8 +71,8 @@ storage::Tuple* TriggerList::ExecBRInsertTriggers(storage::Tuple *tuple, executo
     if (predicate_ != nullptr) {
       if (executor_context_ != nullptr) {
         LOG_INFO("before evalulate");
-        auto number = predicate_->GetChildrenSize();
-        (void) number;
+        // auto number = predicate_->GetChildrenSize();
+        // (void) number;
         auto eval = predicate_->Evaluate(tuple, nullptr, executor_context_);
         LOG_INFO("Evaluation result: %s", eval.GetInfo().c_str());
         if (eval.IsTrue()) {
