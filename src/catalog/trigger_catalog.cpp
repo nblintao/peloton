@@ -60,7 +60,7 @@ TriggerCatalog::TriggerCatalog(concurrency::Transaction *txn)
   Catalog::GetInstance()->CreateIndex(
       CATALOG_DATABASE_NAME, TRIGGER_CATALOG_NAME,
       {"trigger_oid"}, TRIGGER_CATALOG_NAME "_skey3",
-      false, IndexType::BWTREE, txn);  
+      false, IndexType::BWTREE, txn);
 }
 
 TriggerCatalog::~TriggerCatalog() {}

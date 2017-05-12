@@ -110,6 +110,7 @@ storage::Tuple* TriggerList::ExecBRInsertTriggers(storage::Tuple *tuple, executo
     LOG_INFO("==================");
     expression::AbstractExpression* predicate_ = obj.GetTriggerWhen();
     if (predicate_ != nullptr) {
+      LOG_INFO("predicate_ is not nullptr");
       if (executor_context_ != nullptr) {
         LOG_INFO("before evalulate");
         auto tuple_new = (const AbstractTuple *) tuple;
@@ -120,6 +121,8 @@ storage::Tuple* TriggerList::ExecBRInsertTriggers(storage::Tuple *tuple, executo
           continue;
         }
       }
+    } else {
+      LOG_INFO("predicate_ is nullptr");
     }
     LOG_INFO("==================");
 

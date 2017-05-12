@@ -19,6 +19,8 @@
 #include "planner/create_plan.h"
 #include "common/logger.h"
 #include "storage/tuple.h"
+#include "expression/tuple_value_expression.h"
+#include "expression/abstract_expression.h"
 
 namespace peloton {
 namespace commands {
@@ -59,7 +61,32 @@ class Trigger {
   }
 
   //TODO
-  // inline std::string GetWhen() {return "function_arguments";}
+  inline std::string GetWhen() {return "function_arguments";}
+
+  //only apply to the simple case: old.balance != new.balance
+  inline std::string GetSerializeWhen() {
+    if (trigger_when == nullptr) {
+      return "";
+    }
+    if (trigger_when->GetExpressionType() != ExpressionType::COMPARE_NOTEQUAL) {
+      return "";
+    }
+    if (trigger_when->GetChildrenSize() != 2) {
+      return "";
+    }
+    auto left = trigger_when->GetChild(0);
+    auto right = trigger_when->GetChild(1);
+    auto compare = trigger_when->GetExpressionType();
+    if (left->GetExpressionType() != ExpressionType::VALUE_TUPLE || right->GetExpressionType() != ExpressionType::VALUE_TUPLE) {
+      return "";
+    }
+    std::string left_table = static_cast<const expression::TupleValueExpression *>(left)->GetTableName();
+    std::string left_column = static_cast<const expression::TupleValueExpression *>(left)->GetColumnName();
+    std::string right_table = static_cast<const expression::TupleValueExpression *>(right)->GetTableName();
+    std::string right_column = static_cast<const expression::TupleValueExpression *>(right)->GetColumnName();
+    return ExpressionTypeToString(compare) + "-" + left_table + "-" + left_column + "-" + right_table + "-" + right_column;
+  }
+
   inline expression::AbstractExpression* GetTriggerWhen() const {return trigger_when;}
 
  private:
