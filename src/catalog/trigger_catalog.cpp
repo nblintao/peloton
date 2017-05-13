@@ -60,7 +60,7 @@ TriggerCatalog::TriggerCatalog(concurrency::Transaction *txn)
   Catalog::GetInstance()->CreateIndex(
       CATALOG_DATABASE_NAME, TRIGGER_CATALOG_NAME,
       {"trigger_oid"}, TRIGGER_CATALOG_NAME "_skey3",
-      false, IndexType::BWTREE, txn);  
+      false, IndexType::BWTREE, txn);
 }
 
 TriggerCatalog::~TriggerCatalog() {}
@@ -304,9 +304,22 @@ commands::TriggerList* TriggerCatalog::GetTriggers(oid_t database_oid,
         LOG_INFO("new trigger list size = %d", newTriggerList->GetTriggerListSize());
         LOG_INFO("new trigger name = %s", newTrigger.GetTriggerName().c_str());
         LOG_INFO("new trigger type = %d", newTrigger.GetTriggerType());
-
+        if (newTrigger.GetTriggerWhen() == nullptr) {
+          LOG_INFO("new trigger fire condition is nullptr");
+        } else {
+          auto trigger_when = newTrigger.GetTriggerWhen();
+          LOG_INFO("new trigger fire condition type = %s", ExpressionTypeToString(trigger_when->GetExpressionType()).c_str());
+          LOG_INFO("new trigger fire condition size = %lu", trigger_when->GetChildrenSize());
+          auto left = trigger_when->GetChild(0);
+          auto right = trigger_when->GetChild(1);
+          LOG_INFO("new trigger fire condition 1st child type = %s", ExpressionTypeToString(left->GetExpressionType()).c_str());
+          LOG_INFO("new trigger fire condition 1st child table = %s", static_cast<const expression::TupleValueExpression *>(left)->GetTableName().c_str());
+          LOG_INFO("new trigger fire condition 1st child column = %s", static_cast<const expression::TupleValueExpression *>(left)->GetColumnName().c_str());
+          LOG_INFO("new trigger fire condition 2nd child type = %s", ExpressionTypeToString(right->GetExpressionType()).c_str());
+          LOG_INFO("new trigger fire condition 2nd child table = %s", static_cast<const expression::TupleValueExpression *>(right)->GetTableName().c_str());
+          LOG_INFO("new trigger fire condition 2nd child column = %s", static_cast<const expression::TupleValueExpression *>(right)->GetColumnName().c_str());
+        }
         newTriggerList->AddTrigger(newTrigger);
-
       }
     }
   }
