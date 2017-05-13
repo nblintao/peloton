@@ -59,14 +59,18 @@ std::string Trigger::SerializeWhen()
   auto left = trigger_when->GetChild(0);
   auto right = trigger_when->GetChild(1);
   auto compare = trigger_when->GetExpressionType();
-  if (left->GetExpressionType() != ExpressionType::VALUE_TUPLE || right->GetExpressionType() != ExpressionType::VALUE_TUPLE) {
+  if (left->GetExpressionType() != ExpressionType::VALUE_TUPLE || right->GetExpressionType() != ExpressionType::VALUE_CONSTANT) {
     return "";
   }
   std::string left_table = static_cast<const expression::TupleValueExpression *>(left)->GetTableName();
   std::string left_column = static_cast<const expression::TupleValueExpression *>(left)->GetColumnName();
-  std::string right_table = static_cast<const expression::TupleValueExpression *>(right)->GetTableName();
-  std::string right_column = static_cast<const expression::TupleValueExpression *>(right)->GetColumnName();
-  return ExpressionTypeToString(compare) + "-" + left_table + "-" + left_column + "-" + right_table + "-" + right_column;
+  std
+
+  std::string right_type_value = static_cast<const expression::ConstantValueExpression *>(right)->GetValue().ToString();
+
+  std::string retval = ExpressionTypeToString(compare) + "-" + left_table + "-" + left_column + "-" + right_type_value;
+  LOG_INFO("retval: %s", retval.c_str());
+  return "";
 }
 
 expression::AbstractExpression* Trigger::DeserializeWhen(std::string fire_condition) {
@@ -88,7 +92,7 @@ expression::AbstractExpression* Trigger::DeserializeWhen(std::string fire_condit
   }
   v.push_back(s);
 
-  // ExpressionType compare = StringToExpressionType(v[0]);
+  ExpressionType compare = StringToExpressionType(v[0]);
   std::string left_table = v[1];
   std::string left_column = v[2];
   std::string right_table = v[3];
@@ -97,8 +101,7 @@ expression::AbstractExpression* Trigger::DeserializeWhen(std::string fire_condit
   //construct expression
   auto left_exp = new expression::TupleValueExpression(std::move(left_column), std::move(left_table));
   auto right_exp = new expression::TupleValueExpression(std::move(right_column), std::move(right_table));
-  // expression::ComparisonExpression compare_exp(ExpressionType::COMPARE_NOTEQUAL, left_exp, right_exp);
-  auto compare_exp = new expression::ComparisonExpression(ExpressionType::COMPARE_NOTEQUAL, left_exp, right_exp);
+  auto compare_exp = new expression::ComparisonExpression(compare, left_exp, right_exp);
   return compare_exp;
 }
 

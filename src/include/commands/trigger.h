@@ -22,6 +22,8 @@
 #include "expression/tuple_value_expression.h"
 #include "expression/abstract_expression.h"
 #include "expression/comparison_expression.h"
+#include "expression/constant_value_expression.h"
+#include "storage/tuple.h"
 
 namespace peloton {
 namespace commands {

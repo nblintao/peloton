@@ -97,7 +97,7 @@ bool SeqScanExecutor::DExecute() {
         // Invalidate tuples that don't satisfy the predicate.
         for (oid_t tuple_id : *tile) {
           expression::ContainerTuple<LogicalTile> tuple(tile.get(), tuple_id);
-          auto eval = predicate_->Evaluate(&tuple, nullptr, executor_context_);
+          auto eval = predicate_->Evaluate(&tuple, &tuple, executor_context_);
           if (eval.IsFalse()) {
             // if (predicate_->Evaluate(&tuple, nullptr, executor_context_)
             //        .IsFalse()) {

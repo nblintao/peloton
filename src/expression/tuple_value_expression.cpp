@@ -21,9 +21,16 @@ type::Value TupleValueExpression::Evaluate(
     const AbstractTuple *tuple1, const AbstractTuple *tuple2,
     UNUSED_ATTRIBUTE executor::ExecutorContext *context) const {
   if (tuple_idx_ == 0) {
+    std::cout << "[0] tuple_idx_=" << tuple_idx_ << std::endl;
     PL_ASSERT(tuple1 != nullptr);
     return (tuple1->GetValue(value_idx_));
   } else {
+    std::cout << "[-1] tuple_idx_=" << tuple_idx_ << std::endl;
+    if (tuple2 == nullptr) {
+      std::cout << "null tuple2" << std::endl;
+    } else {
+      std::cout << "tuple2 is not null" << std::endl;
+    }
     PL_ASSERT(tuple2 != nullptr);
     return (tuple2->GetValue(value_idx_));
   }
