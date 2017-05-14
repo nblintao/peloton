@@ -172,32 +172,27 @@ bool InsertExecutor::DExecute() {
       // LOG_INFO("table name=%s", target_table->GetName().c_str());
       // oid_t table_oid = catalog::TableCatalog::GetInstance()->GetTableOid(target_table->GetName(), database_oid, current_txn);
       // LOG_INFO("table_oid = %d", table_oid);
-      // commands::TriggerList* trigger_list = catalog::TriggerCatalog::GetInstance()->GetTriggersByType(database_oid, table_oid, 
+      // commands::TriggerList* trigger_list = catalog::TriggerCatalog::GetInstance()->GetTriggersByType(database_oid, table_oid,
       //                         peloton::commands::EnumTriggerType::BEFORE_INSERT_ROW, current_txn);
       // LOG_INFO("reach here safely");
 
       auto new_tuple = tuple;
+
+      // Carry out insertion
+      ItemPointer *index_entry_ptr = nullptr;
+      ItemPointer location = target_table->InsertTuple(new_tuple, current_txn, &index_entry_ptr);
+
       if (trigger_list != nullptr) {
         LOG_INFO("size of trigger list in target table: %d", trigger_list->GetTriggerListSize());
 
         if (trigger_list->HasTriggerType(commands::EnumTriggerType::BEFORE_INSERT_ROW)) {
           LOG_INFO("target table has per-row-before-insert triggers!");
           LOG_INFO("address of the origin tuple before firing triggers: 0x%lx", long(tuple));
-          new_tuple = trigger_list->ExecBRInsertTriggers(const_cast<storage::Tuple *> (tuple));
+          trigger_list->ExecBRInsertTriggers(&location);
           LOG_INFO("address of the new tuple after firing triggers: 0x%lx", long(new_tuple));
         }
       }
 
-      if (new_tuple == nullptr) {
-        // trigger doesn't allow this tuple to be inserted
-        LOG_INFO("this tuple is rejected by trigger");
-        continue;
-      }
-
-      // Carry out insertion
-      ItemPointer *index_entry_ptr = nullptr;
-      ItemPointer location =
-          target_table->InsertTuple(new_tuple, current_txn, &index_entry_ptr);
       if (new_tuple->GetColumnCount() > 2) {
         type::Value val = (new_tuple->GetValue(2));
         LOG_TRACE("value: %s", val.GetInfo().c_str());
@@ -234,7 +229,7 @@ bool InsertExecutor::DExecute() {
       // }
       // oid_t table_oid = catalog::TableCatalog::GetInstance()->GetTableOid(target_table->GetName(), database_oid, current_txn);
       // LOG_INFO("table_oid = %d", table_oid);
-      // trigger_list = catalog::TriggerCatalog::GetInstance()->GetTriggersByType(database_oid, table_oid, 
+      // trigger_list = catalog::TriggerCatalog::GetInstance()->GetTriggersByType(database_oid, table_oid,
       //                         peloton::commands::EnumTriggerType::BEFORE_INSERT_ROW, current_txn);
       // LOG_INFO("reach here safely");
 

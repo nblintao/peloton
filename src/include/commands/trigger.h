@@ -19,6 +19,7 @@
 #include "planner/create_plan.h"
 #include "common/logger.h"
 #include "storage/tuple.h"
+#include "common/item_pointer.h"
 
 namespace peloton {
 namespace commands {
@@ -31,11 +32,13 @@ class TriggerData {
   // keep the variable name same, but not create a new type like TriggerEvent
   int16_t tg_event;
   Trigger *tg_trigger;
-  storage::Tuple *tg_trigtuple; // i.e. old tuple
-  storage::Tuple * tg_newtuple;
+  // storage::Tuple *tg_trigtuple; // i.e. old tuple
+  // storage::Tuple *tg_newtuple;
+  ItemPointer *tg_triglocation;
+  ItemPointer *tg_newlocation;
 
-  TriggerData(int16_t tg_event, Trigger *tg_trigger, storage::Tuple *tg_trigtuple, storage::Tuple *tg_newtuple) :
-    tg_event(tg_event), tg_trigger(tg_trigger), tg_trigtuple(tg_trigtuple), tg_newtuple(tg_newtuple) {}
+  TriggerData(int16_t tg_event, Trigger *tg_trigger, ItemPointer *tg_triglocation, ItemPointer *tg_newlocation):
+    tg_event(tg_event), tg_trigger(tg_trigger), tg_triglocation(tg_triglocation), tg_newlocation(tg_newlocation) {}
 };
 
 class Trigger {
@@ -119,7 +122,10 @@ class TriggerList {
   void AddTrigger(Trigger trigger);
   void UpdateTypeSummary(int16_t type);
   Trigger* Get(int n) { return &triggers[n]; }  // get trigger by index
-  storage::Tuple* ExecBRInsertTriggers(storage::Tuple *new_tuple);
+  storage::Tuple* ExecBRInsertTriggers(ItemPointer *new_tuple);
+  bool ExecBRDeleteTriggers(ItemPointer *old_tuple);
+  // storage::Tuple* ExecBRUpdateTriggers(ItemPointer *old_location, ItemPointer *new_location);
+
  private:
   // types_summary contains a boolean for each kind of EnumTriggerType, this is
   // used for facilitate checking weather there is a trigger to be invoked

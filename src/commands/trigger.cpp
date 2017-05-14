@@ -86,7 +86,7 @@ void TriggerList::UpdateTypeSummary(int16_t type) {
 /**
  * execute trigger on each row before inserting tuple.
  */
-storage::Tuple* TriggerList::ExecBRInsertTriggers(storage::Tuple *tuple) {
+storage::Tuple* TriggerList::ExecBRInsertTriggers(ItemPointer *new_location) {
   unsigned i;
   LOG_INFO("enter into ExecBRInsertTriggers");
 
@@ -95,7 +95,7 @@ storage::Tuple* TriggerList::ExecBRInsertTriggers(storage::Tuple *tuple) {
     return nullptr;
   }
 
-  storage::Tuple* new_tuple = tuple;
+  storage::Tuple *new_tuple = nullptr;
   for (i = 0; i < triggers.size(); i++) {
     Trigger &obj = triggers[i];
     int16_t trigger_type = obj.GetTriggerType();
@@ -105,15 +105,67 @@ storage::Tuple* TriggerList::ExecBRInsertTriggers(storage::Tuple *tuple) {
     }
 
     //TODO: check if trigger is enabled
-
-
     // Construct trigger data
-    TriggerData trigger_data(trigger_type, &obj, nullptr, tuple);
+    TriggerData trigger_data(trigger_type, &obj, nullptr, new_location);
     // apply all per-row-before-insert triggers on the tuple
     new_tuple = obj.ExecCallTriggerFunc(trigger_data);
   }
   return new_tuple;
 }
+
+bool TriggerList::ExecBRDeleteTriggers(ItemPointer *old_location) {
+  unsigned i;
+  LOG_INFO("enter into ExecBRDeleteTriggers");
+
+  //check valid type
+  if (!types_summary[EnumTriggerType::BEFORE_DELETE_ROW]) {
+    return false;
+  }
+
+  for (i = 0; i < triggers.size(); i++) {
+    Trigger &obj = triggers[i];
+    int16_t trigger_type = obj.GetTriggerType();
+    //check valid type
+    if (!TRIGGER_TYPE_MATCHES(trigger_type, TRIGGER_TYPE_ROW, TRIGGER_TYPE_BEFORE, TRIGGER_TYPE_UPDATE)) {
+      continue;
+    }
+
+    //TODO: check if trigger is enabled
+    // Construct trigger data
+    TriggerData trigger_data(trigger_type, &obj, old_location, nullptr);
+    // apply all per-row-before-delete triggers on the tuple
+    obj.ExecCallTriggerFunc(trigger_data);
+  }
+  return true;
+}
+
+// storage::Tuple* TriggerList::ExecBRUpdateTriggers(ItemPointer *old_location, ItemPointer *new_location) {
+//   unsigned i;
+//   LOG_INFO("enter into ExecBRUpdateTriggers");
+
+//   //check valid type
+//   if (!types_summary[EnumTriggerType::BEFORE_INSERT_ROW]) {
+//     return nullptr;
+//   }
+
+//   storage::Tuple *new_tuple = nullptr;
+//   for (i = 0; i < triggers.size(); i++) {
+//     Trigger &obj = triggers[i];
+//     int16_t trigger_type = obj.GetTriggerType();
+//     //check valid type
+//     if (!TRIGGER_TYPE_MATCHES(trigger_type, TRIGGER_TYPE_ROW, TRIGGER_TYPE_BEFORE, TRIGGER_TYPE_INSERT)) {
+//       continue;
+//     }
+
+//     //TODO: check if trigger is enabled
+//     // Construct trigger data
+//     TriggerData trigger_data(trigger_type, &obj, old_location, new_location);
+//     // apply all per-row-before-insert triggers on the tuple
+//     new_tuple = obj.ExecCallTriggerFunc(trigger_data);
+//   }
+//   return new_tuple;
+// }
+
 
 /**
  * Call a trigger function.

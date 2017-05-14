@@ -106,7 +106,7 @@ bool DeleteExecutor::DExecute() {
     LOG_TRACE("Visible Tuple id : %u, Physical Tuple id : %u ",
               visible_tuple_id, physical_tuple_id);
 
-    bool is_owner = 
+    bool is_owner =
         transaction_manager.IsOwner(current_txn, tile_group_header, physical_tuple_id);
     bool is_written =
       transaction_manager.IsWritten(current_txn, tile_group_header, physical_tuple_id);
@@ -122,11 +122,17 @@ bool DeleteExecutor::DExecute() {
       LOG_INFO("size of trigger list in target table: %d", trigger_list->GetTriggerListSize());
       if (trigger_list->GetTriggerListSize() > 0) {
         LOG_INFO("this table has trigger per-row-before-delete triggers!!!!");
-
-        // TODO: check whether fire condition is met!
+        // auto manager = catalog::Manager::GetInstance();
+        // storage::Tuple *old_tuple = tile->GetTuple(*manager, &old_location);
+        //call trigger execute function
+        bool retval = trigger_list->ExecBRDeleteTriggers(&old_location);
+        if (retval == true) {
+          LOG_INFO("ExecBRDeleteTriggers return true");
+        } else {
+          LOG_INFO("ExecBRDeleteTriggers return false");
+        }
       }
     }
-
 
     if (is_owner == true && is_written == true) {
       // if the thread is the owner of the tuple, then directly update in place.
